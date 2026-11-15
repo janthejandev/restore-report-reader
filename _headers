@@ -1,0 +1,4 @@
+# Cloudflare Pages headers. Make browsers re-check the weekly issue files
+# so readers always get the newest current.pdf.
+/issues/*
+  Cache-Control: no-cache

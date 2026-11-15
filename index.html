@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Restore Report</title>
+  <meta name="description" content="Read the latest issue of The Restore Report.">
+  <meta name="theme-color" content="#051E40">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name">The Restore Report</span>
+      <span class="issue" id="issue-title">Loading…</span>
+    </div>
+    <nav class="links">
+      <select id="archive" class="archive" aria-label="Past issues" hidden></select>
+      <a id="download" class="download" href="issues/current.pdf" download>Download PDF</a>
+      <a class="site-link" href="https://therestorereport.uk">therestorereport.uk</a>
+    </nav>
+  </header>
+
+  <main id="stage" class="stage">
+    <div id="status" class="status" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="status-text">Opening the latest issue…</p>
+    </div>
+    <div id="book-holder" class="book-holder"><div id="book"></div></div>
+  </main>
+
+  <footer class="controls" id="controls" hidden>
+    <button id="prev" type="button" aria-label="Previous page">&#8249; <span class="lbl">Previous</span></button>
+    <span id="page-info" class="page-info" aria-live="polite">Page 1 of 1</span>
+    <button id="next" type="button" aria-label="Next page"><span class="lbl">Next</span> &#8250;</button>
+    <button id="fullscreen" type="button" class="fs" aria-label="Full screen" title="Full screen">&#x26F6;</button>
+  </footer>
+
+  <script src="vendor/page-flip/page-flip.browser.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
