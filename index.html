@@ -10,14 +10,28 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Icon set (inline SVG, no external requests) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-thumbs" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></g></symbol>
+    <symbol id="i-toc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></g></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></g></symbol>
+    <symbol id="i-zoom-in" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5M10.5 7.5v6M7.5 10.5h6"/></g></symbol>
+    <symbol id="i-zoom-out" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5l5 5M7.5 10.5h6"/></g></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4"/></g></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></g></symbol>
+    <symbol id="i-fullscreen" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></g></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  </svg>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-name">The Restore Report</span>
       <span class="issue" id="issue-title">Loading…</span>
     </div>
-    <nav class="links">
+    <nav class="links" aria-label="Site">
       <select id="archive" class="archive" aria-label="Past issues" hidden></select>
-      <a id="download" class="download" href="issues/current.pdf" download>Download PDF</a>
       <a class="site-link" href="https://therestorereport.uk">therestorereport.uk</a>
     </nav>
   </header>
@@ -28,13 +42,53 @@
       <p id="status-text">Opening the latest issue…</p>
     </div>
     <div id="book-holder" class="book-holder"><div id="book"></div></div>
+
+    <!-- Zoomed view: a scrollable close-up of the page(s) on screen -->
+    <div id="zoom-view" class="zoom-view" hidden>
+      <div id="zoom-pages" class="zoom-pages"></div>
+    </div>
+    <button id="zoom-close" type="button" class="zoom-close" aria-label="Close zoom" title="Close zoom" hidden><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+
+    <!-- Slide-up panels -->
+    <section id="panel-thumbs" class="panel" aria-label="All pages" hidden>
+      <div class="panel-head"><h2>Pages</h2><button type="button" class="panel-close" data-close aria-label="Close pages"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+      <div id="thumbs" class="thumbs" role="list"></div>
+    </section>
+    <section id="panel-toc" class="panel" aria-label="Contents" hidden>
+      <div class="panel-head"><h2>Contents</h2><button type="button" class="panel-close" data-close aria-label="Close contents"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+      <ol id="toc" class="toc"></ol>
+    </section>
+    <section id="panel-search" class="panel" aria-label="Search this issue" hidden>
+      <div class="panel-head"><h2>Search</h2><button type="button" class="panel-close" data-close aria-label="Close search"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+      <form id="search-form" class="search-form" role="search">
+        <input id="search-input" type="search" placeholder="Search this issue" aria-label="Search words" autocomplete="off" enterkeyhint="search">
+        <button type="submit" class="btn-text">Search</button>
+      </form>
+      <p id="search-msg" class="search-msg" aria-live="polite"></p>
+      <ol id="search-results" class="search-results"></ol>
+    </section>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </main>
 
-  <footer class="controls" id="controls" hidden>
-    <button id="prev" type="button" aria-label="Previous page">&#8249; <span class="lbl">Previous</span></button>
-    <span id="page-info" class="page-info" aria-live="polite">Page 1 of 1</span>
-    <button id="next" type="button" aria-label="Next page"><span class="lbl">Next</span> &#8250;</button>
-    <button id="fullscreen" type="button" class="fs" aria-label="Full screen" title="Full screen">&#x26F6;</button>
+  <footer class="toolbar" id="controls" hidden>
+    <div class="tb-group tb-tools-left">
+      <button id="btn-thumbs" type="button" class="tb" aria-label="Show all pages" title="All pages" aria-controls="panel-thumbs" aria-expanded="false"><svg aria-hidden="true"><use href="#i-thumbs"/></svg><span class="tb-lbl">Pages</span></button>
+      <button id="btn-toc" type="button" class="tb" aria-label="Contents" title="Contents" aria-controls="panel-toc" aria-expanded="false" hidden><svg aria-hidden="true"><use href="#i-toc"/></svg><span class="tb-lbl">Contents</span></button>
+      <button id="btn-search" type="button" class="tb" aria-label="Search this issue" title="Search" aria-controls="panel-search" aria-expanded="false"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="tb-lbl">Search</span></button>
+    </div>
+    <div class="tb-group tb-nav">
+      <button id="prev" type="button" class="tb tb-round" aria-label="Previous page" title="Previous page"><svg aria-hidden="true"><use href="#i-prev"/></svg></button>
+      <span id="page-info" class="page-info" aria-live="polite">Page 1 of 1</span>
+      <button id="next" type="button" class="tb tb-round" aria-label="Next page" title="Next page"><svg aria-hidden="true"><use href="#i-next"/></svg></button>
+    </div>
+    <div class="tb-group tb-tools-right">
+      <button id="zoom-out" type="button" class="tb" aria-label="Zoom out" title="Zoom out" disabled><svg aria-hidden="true"><use href="#i-zoom-out"/></svg></button>
+      <button id="zoom-in" type="button" class="tb" aria-label="Zoom in" title="Zoom in"><svg aria-hidden="true"><use href="#i-zoom-in"/></svg></button>
+      <button id="btn-share" type="button" class="tb" aria-label="Share this issue" title="Share"><svg aria-hidden="true"><use href="#i-share"/></svg><span class="tb-lbl">Share</span></button>
+      <a id="download" class="tb" href="issues/current.pdf" download aria-label="Download PDF" title="Download PDF"><svg aria-hidden="true"><use href="#i-download"/></svg><span class="tb-lbl">PDF</span></a>
+      <button id="fullscreen" type="button" class="tb" aria-label="Full screen" title="Full screen"><svg aria-hidden="true"><use href="#i-fullscreen"/></svg></button>
+    </div>
   </footer>
 
   <script src="vendor/page-flip/page-flip.browser.js"></script>

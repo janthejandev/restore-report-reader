@@ -90,6 +90,12 @@ Plain static site: `index.html`, `style.css`, `app.js`, plus vendored libraries 
 - [StPageFlip](https://github.com/Nodlik/StPageFlip) (`page-flip`, MIT) – page-turn effect
 - [PDF.js](https://github.com/mozilla/pdf.js) (`pdfjs-dist`, Apache-2.0) – renders PDF pages
 
+Bottom toolbar (magazine style): all-pages strip, contents (only shown when the PDF has real
+bookmarks; Canva's automatic heading bookmarks are ignored), search (PDF.js text), previous/next
+with page counter, zoom in/out (sharper re-render when zoomed), share (Web Share API, or copies the
+link), download PDF and full screen. Links inside the PDF are clickable and open in a new tab.
+A page can be linked directly with `#page=3`.
+
 `app.js` renders each PDF page to a JPEG (1400 px wide) with PDF.js, shows the book after the
 first 4 pages, and renders the rest in the background.
 
@@ -99,6 +105,7 @@ npm run vendor       # copy libraries from node_modules into vendor/
 npm run build        # copy the site into dist/ (checks the 25 MiB file limit)
 npm run serve        # http://localhost:8765
 npm test             # headless Chrome smoke test + screenshots (needs Chrome)
+npm run test:toolbar # headless check of the toolbar (pages, contents, search, zoom, share, links)
 ```
 
 UI accent colour: navy `#051E40`, sampled from the Restore Britain logo on

@@ -6,7 +6,8 @@
     "build": "node scripts/build.mjs",
     "vendor": "node scripts/vendor.mjs",
     "test": "node scripts/test.mjs",
-    "serve": "cd dist && python3 -m http.server 8765"
+    "serve": "cd dist && python3 -m http.server 8765",
+    "test:toolbar": "node scripts/test-toolbar.mjs"
   },
   "license": "MIT",
   "type": "module",
