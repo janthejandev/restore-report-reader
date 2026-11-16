@@ -619,16 +619,27 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "-") setZoom(zoomIndex - 1);
 });
 
-if (document.fullscreenEnabled) {
-  els.fs.addEventListener("click", () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else document.documentElement.requestFullscreen().catch(() => {});
-  });
+// Full screen hides the browser's own bars (Android Chrome, Brave, desktop).
+// iPhone Safari has no Fullscreen API, so the buttons stay hidden there;
+// "Add to Home Screen" (see manifest.webmanifest) is the iPhone route.
+const fsButtons = [els.fs, $("fullscreen-top")].filter(Boolean);
+const fsEl = document.documentElement;
+const canFullscreen = !!(document.fullscreenEnabled && fsEl.requestFullscreen);
+if (canFullscreen) {
+  for (const b of fsButtons) {
+    b.hidden = false;
+    b.addEventListener("click", () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else fsEl.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+    });
+  }
   document.addEventListener("fullscreenchange", () => {
-    els.fs.setAttribute("aria-label", document.fullscreenElement ? "Exit full screen" : "Full screen");
+    const on = !!document.fullscreenElement;
+    document.body.classList.toggle("is-fullscreen", on);
+    for (const b of fsButtons) { b.setAttribute("aria-label", on ? "Exit full screen" : "Full screen"); b.title = on ? "Exit full screen" : "Full screen"; }
   });
 } else {
-  els.fs.hidden = true; // e.g. iPhone Safari has no fullscreen API
+  for (const b of fsButtons) b.hidden = true;
 }
 
 main().catch((err) => { console.error(err); showError("Sorry, something went wrong opening this issue."); });

@@ -1,7 +1,7 @@
 // "Build" = copy the static site into dist/ (used by Cloudflare Pages).
 // No bundler is needed: everything is plain HTML/CSS/JS with vendored libraries.
 import { cpSync, rmSync, mkdirSync, existsSync, statSync, readdirSync } from "node:fs";
-const files = ["index.html", "app.js", "style.css", ".nojekyll", "_headers", "favicon.svg"];
+const files = ["index.html", "app.js", "style.css", ".nojekyll", "_headers", "favicon.svg", "manifest.webmanifest"];
 const dirs = ["vendor", "issues", "assets"];
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist");

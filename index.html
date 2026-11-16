@@ -7,6 +7,12 @@
   <meta name="description" content="Read the latest issue of The Restore Report.">
   <meta name="theme-color" content="#051E40">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Restore Report">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,6 +39,7 @@
     <nav class="links" aria-label="Site">
       <select id="archive" class="archive" aria-label="Past issues" hidden></select>
       <a class="site-link" href="https://therestorereport.uk">therestorereport.uk</a>
+      <button id="fullscreen-top" type="button" class="tb tb-top" aria-label="Full screen" title="Full screen" hidden><svg aria-hidden="true"><use href="#i-fullscreen"/></svg></button>
     </nav>
   </header>
 

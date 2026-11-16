@@ -184,7 +184,10 @@ body {
   .tb-round { background: transparent; }
   .tb-round svg { width: 24px; height: 24px; }
   .page-info { min-width: 56px; font-size: .9rem; }
+  /* the toolbar is full at phone widths, so full screen sits in the top bar instead */
   #fullscreen { display: none; }
+  .tb-top { min-width: 40px; min-height: 36px; padding: 0; margin-right: -6px; }
+  .tb-top svg { width: 22px; height: 22px; }
   #zoom-out { display: none; }
   body.is-zoomed #zoom-out { display: inline-flex; }
   body.is-zoomed #btn-share, body.is-zoomed #download { display: none; }
@@ -195,4 +198,12 @@ body {
   .tb { min-width: 37px; }
   .tb svg { width: 21px; height: 21px; }
   .page-info { min-width: 50px; font-size: .85rem; }
+}
+
+/* Full-screen button in the top bar: phones only */
+.tb-top { display: none; }
+@media (max-width: 799px) {
+  .tb-top { display: inline-flex; }
+  .tb-top[hidden] { display: none; }
+  .links { gap: 8px; }
 }
