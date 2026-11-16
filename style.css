@@ -165,3 +165,34 @@ body {
   .thumb { width: 84px; }
   .panel { max-height: 78%; }
 }
+
+/* ---------- Phones (under 800px): page as big as possible, one slim toolbar row ---------- */
+@media (max-width: 799px) {
+  :root { --bar-h: 36px; }
+  .topbar { height: var(--bar-h); flex-wrap: nowrap; padding: 0 12px; row-gap: 0; }
+  .brand { flex-direction: row; align-items: center; gap: 8px; }
+  .brand-name { font-size: .9rem; }
+  .issue { display: none; }
+  .links a { font-size: .78rem; opacity: .9; }
+  .stage { padding: 0; }
+  .stf__item { box-shadow: none; }
+  .toolbar { flex-wrap: nowrap; justify-content: space-between; gap: 0; min-height: 0; padding: 2px 4px calc(2px + env(safe-area-inset-bottom)); row-gap: 0; }
+  .tb-nav { order: 0; width: auto; gap: 2px; }
+  .tb-tools-left, .tb-tools-right { flex: none; gap: 0; }
+  .tb { min-width: 40px; min-height: 44px; padding: 2px; }
+  .tb svg { width: 22px; height: 22px; }
+  .tb-round { background: transparent; }
+  .tb-round svg { width: 24px; height: 24px; }
+  .page-info { min-width: 56px; font-size: .9rem; }
+  #fullscreen { display: none; }
+  #zoom-out { display: none; }
+  body.is-zoomed #zoom-out { display: inline-flex; }
+  body.is-zoomed #btn-share, body.is-zoomed #download { display: none; }
+  .zoom-pages { padding: 0; }
+  .zoom-close { top: 8px; right: 8px; }
+}
+@media (max-width: 374px) {
+  .tb { min-width: 37px; }
+  .tb svg { width: 21px; height: 21px; }
+  .page-info { min-width: 50px; font-size: .85rem; }
+}

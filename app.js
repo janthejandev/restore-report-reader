@@ -27,7 +27,7 @@ const els = {
 const panels = { thumbs: $("panel-thumbs"), toc: $("panel-toc"), search: $("panel-search") };
 const panelButtons = { thumbs: els.btnThumbs, toc: els.btnToc, search: els.btnSearch };
 
-const MOBILE_BREAKPOINT = 768;   // below this width: one page at a time
+const MOBILE_BREAKPOINT = 800;   // below this width: one page at a time, phone layout
 const RENDER_WIDTH = 1400;       // pixel width each page is rendered at (sharp on most screens)
 const FIRST_BATCH = 4;           // pages rendered before the book is shown
 const ZOOM_STEPS = [1, 1.5, 2, 3, 4];
@@ -131,9 +131,11 @@ function visiblePages() {
 function updateInfo() {
   if (!pageFlip) return;
   const vis = visiblePages();
+  const phone = window.innerWidth < MOBILE_BREAKPOINT;
   els.info.textContent = vis.length === 2
     ? `Pages ${vis[0] + 1}–${vis[1] + 1} of ${pageCount}`
-    : `Page ${vis[0] + 1} of ${pageCount}`;
+    : phone ? `${vis[0] + 1} / ${pageCount}` : `Page ${vis[0] + 1} of ${pageCount}`;
+  els.info.setAttribute("aria-label", `Page ${vis[0] + 1} of ${pageCount}`);
   els.prev.disabled = vis[0] <= 0;
   els.next.disabled = vis[vis.length - 1] >= pageCount - 1;
   for (const t of els.thumbs.querySelectorAll(".thumb")) {
@@ -403,6 +405,7 @@ function setZoom(index) {
   els.zoomClose.hidden = !on;
   els.holder.classList.toggle("zoomed", on);
   els.zoomOut.disabled = !on;
+  document.body.classList.toggle("is-zoomed", on);
   els.zoomIn.disabled = zoomIndex === ZOOM_STEPS.length - 1;
   els.zoomIn.setAttribute("aria-label", on ? `Zoom in (now ${ZOOM_STEPS[zoomIndex] * 100}%)` : "Zoom in");
   if (on) {
@@ -423,6 +426,78 @@ function closeZoom() { if (zoomIndex > 0) setZoom(0); }
 els.zoomIn.addEventListener("click", () => setZoom(zoomIndex + 1));
 els.zoomOut.addEventListener("click", () => setZoom(zoomIndex - 1));
 els.zoomClose.addEventListener("click", () => { setZoom(0); els.zoomIn.focus(); });
+
+// ---------- Pinch and double-tap zoom (phones) ----------
+// StPageFlip cancels the browser's own touch gestures on the book, so two-finger
+// pinches are caught here first (capture phase) and turned into the reader's zoom.
+let pinch = null;
+const touchDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+function cancelFlipTouch() {
+  const ui = pageFlip && pageFlip.ui;
+  if (ui) ui.touchPoint = null;
+  try { if (pageFlip && pageFlip.getState() !== "read") pageFlip.flipController && pageFlip.flipController.stopMove(); } catch {}
+}
+window.addEventListener("touchstart", (e) => {
+  if (e.touches.length < 2 || !e.target.closest || !e.target.closest("#stage")) return;
+  if (e.target.closest(".panel")) return;
+  cancelFlipTouch();
+  const target = zoomIndex > 0 ? els.zoomPages : els.holder;
+  pinch = { d0: touchDist(e.touches), scale: 1, target, startZoom: zoomIndex };
+  target.style.transformOrigin = "50% 50%";
+  e.stopPropagation(); if (e.cancelable) e.preventDefault();
+}, { capture: true, passive: false });
+window.addEventListener("touchmove", (e) => {
+  if (!pinch) return;
+  e.stopPropagation(); if (e.cancelable) e.preventDefault();
+  if (e.touches.length < 2) return;
+  pinch.scale = Math.max(0.25, Math.min(4, touchDist(e.touches) / pinch.d0));
+  pinch.target.style.transform = `scale(${pinch.scale})`;
+}, { capture: true, passive: false });
+const endPinch = (e) => {
+  if (!pinch) return;
+  e.stopPropagation();
+  if (e.touches.length > 0) return; // wait for the last finger
+  const { scale, target, startZoom } = pinch;
+  pinch = null;
+  target.style.transform = "";
+  const want = ZOOM_STEPS[startZoom] * scale;
+  let best = 0;
+  for (let i = 0; i < ZOOM_STEPS.length; i++) if (Math.abs(ZOOM_STEPS[i] - want) < Math.abs(ZOOM_STEPS[best] - want)) best = i;
+  if (scale > 1.1 && best <= startZoom) best = Math.min(startZoom + 1, ZOOM_STEPS.length - 1);
+  if (scale < 0.9 && best >= startZoom) best = Math.max(startZoom - 1, 0);
+  if (best !== startZoom) setZoom(best);
+};
+window.addEventListener("touchend", endPinch, { capture: true });
+window.addEventListener("touchcancel", endPinch, { capture: true });
+// Quick one-finger swipes turn the page. StPageFlip's own swipe only works
+// forwards in single-page mode, so quick swipes are handled here instead.
+let swipe = null;
+window.addEventListener("touchstart", (e) => {
+  swipe = null;
+  if (e.touches.length !== 1 || zoomIndex > 0 || !pageFlip) return;
+  if (!e.target.closest || !e.target.closest("#book-holder")) return;
+  const t = e.touches[0];
+  swipe = { x: t.clientX, y: t.clientY, t: Date.now() };
+}, { capture: true, passive: true });
+window.addEventListener("touchend", (e) => {
+  if (!swipe || pinch || e.changedTouches.length !== 1) { swipe = null; return; }
+  const t = e.changedTouches[0];
+  const dx = t.clientX - swipe.x, dy = t.clientY - swipe.y, dt = Date.now() - swipe.t;
+  swipe = null;
+  if (dt > 240 || Math.abs(dx) < 40 || Math.abs(dx) < 1.5 * Math.abs(dy)) return; // let StPageFlip handle drags and taps
+  e.stopPropagation();
+  if (pageFlip.ui) pageFlip.ui.touchPoint = null;
+  if (dx < 0) pageFlip.flipNext(); else pageFlip.flipPrev();
+}, { capture: true });
+
+// Double-tap the page to zoom in to 200%; double-tap again to go back.
+let lastTap = 0;
+els.stage.addEventListener("touchend", (e) => {
+  if (e.changedTouches.length !== 1 || e.target.closest("a, button, .panel, .pdf-link")) return;
+  const now = Date.now();
+  if (now - lastTap < 300) { lastTap = 0; setZoom(zoomIndex > 0 ? 0 : 2); }
+  else lastTap = now;
+});
 
 // ---------- Share ----------
 
