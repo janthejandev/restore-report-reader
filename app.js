@@ -32,6 +32,8 @@ const RENDER_WIDTH = 1400;       // pixel width each page is rendered at (sharp 
 const FIRST_BATCH = 4;           // pages rendered before the book is shown
 const ZOOM_STEPS = [1, 1.5, 2, 3, 4];
 const SAFE_LINK = /^(https?:|mailto:|tel:)/i;
+// PDF links ending in #share (e.g. https://…/restore-report-reader/#share) act as share buttons.
+const SHARE_LINK = /^https:\/\/[^#]*#share$/i;
 
 // Which issue to show: issues/current.pdf, or ?issue=<file>.pdf from the archive list.
 const params = new URLSearchParams(location.search);
@@ -198,7 +200,12 @@ function linkLayer(index) {
     a.className = "pdf-link";
     a.style.left = `${l.left}%`; a.style.top = `${l.top}%`;
     a.style.width = `${l.width}%`; a.style.height = `${l.height}%`;
-    if (l.url) {
+    if (l.url && SHARE_LINK.test(l.url)) {
+      // "Share this magazine" buttons inside the PDF open the phone's share menu.
+      a.href = location.href.split("#")[0];
+      a.setAttribute("aria-label", "Share this magazine");
+      a.addEventListener("click", (e) => { e.preventDefault(); closeZoom(); shareMagazine(); });
+    } else if (l.url) {
       a.href = l.url; a.target = "_blank"; a.rel = "noopener noreferrer";
       a.setAttribute("aria-label", `Open link: ${l.url.replace(/^mailto:/i, "email ")}`);
       a.title = l.url.replace(/^mailto:/i, "");
@@ -501,10 +508,10 @@ els.stage.addEventListener("touchend", (e) => {
 
 // ---------- Share ----------
 
-els.btnShare.addEventListener("click", async () => {
+async function shareMagazine() {
   const url = location.href.split("#")[0];
   if (navigator.share) {
-    try { await navigator.share({ title: issueTitle, text: "Read The Restore Report", url }); return; }
+    try { await navigator.share({ title: issueTitle, text: "Here's The Restore Report, a free weekly magazine for Restore Britain supporters. Tap to read:", url }); return; }
     catch (err) { if (err && err.name === "AbortError") return; }
   }
   try {
@@ -513,7 +520,8 @@ els.btnShare.addEventListener("click", async () => {
   } catch {
     window.prompt("Copy this link to share:", url);
   }
-});
+}
+els.btnShare.addEventListener("click", shareMagazine);
 
 // ---------- Main ----------
 
